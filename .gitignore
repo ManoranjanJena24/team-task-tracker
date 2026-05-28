@@ -1,0 +1,24 @@
+# Dependency directories
+backend/node_modules/
+frontend/node_modules/
+
+
+backend/dist/
+backend/build/
+frontend/build/
+frontend/.next/
+frontend/out/
+
+
+**/.*env
+**.env.*
+!**/.*env.example
+
+# Debug logs
+*.log
+backend/*.log
+frontend/*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
