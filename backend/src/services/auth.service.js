@@ -5,7 +5,19 @@ const { hashPassword, comparePassword } = require("../utils/bcrypt");
 const { generateAccessToken, generateRefreshToken } = require("../utils/jwt");
 
 const registerUser = async (data) => {
-  const { name, email, password, organizationName } = data;
+  const { name, email, password, organizationName, role } = data;
+
+  if (!name || !email || !password || !organizationName) {
+    throw new Error("name, email, password and organizationName are required");
+  }
+
+  const allowedRoles = ["ADMIN", "MANAGER", "MEMBER"];
+
+  if (role && !allowedRoles.includes(role)) {
+    throw new Error(
+      `Invalid role. Allowed roles are: ${allowedRoles.join(", ")}`,
+    );
+  }
 
   const existingUser = await User.findOne({
     where: { email },
@@ -25,15 +37,25 @@ const registerUser = async (data) => {
     name,
     email,
     password: hashedPassword,
-    role: "ADMIN",
+    role: role || "MEMBER",
     organization_id: organization.id,
   });
 
-  return user;
+  const userResponse = user.toJSON();
+
+  delete userResponse.password;
+  delete userResponse.refresh_token;
+
+  return userResponse;
 };
+
 
 const loginUser = async (data) => {
   const { email, password } = data;
+
+  if (!email || !password) {
+    throw new Error("Email and password are required");
+  }
 
   const user = await User.findOne({
     where: { email },
@@ -63,10 +85,15 @@ const loginUser = async (data) => {
 
   await user.save();
 
+  const userResponse = user.toJSON();
+
+  delete userResponse.password;
+  delete userResponse.refresh_token;
+
   return {
     accessToken,
     refreshToken,
-    user,
+    user: userResponse,
   };
 };
 
